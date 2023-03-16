@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext,useRef } from "react";
 import { MessageData } from '@/context/MsgContext';
 import { v4 as uuidv4 } from "uuid";
 
@@ -9,11 +9,11 @@ import styles from "./Homepage.module.css";
 
 export default function Homepage(props) {
   const  {infoMessage, setInfoMessage} = useContext(MessageData)
-  console.log(props.avatar)
-
+  
   let path = "backgrounds/bg01.jpg";
   const [avatarEdition, setAvatarEdition] = useState(false)
   const [avatarForm, setAvatarForm] = useState('')
+  const image = useRef(null)
 
   function getExtension(filename){
     const parts = filename.split('.');
@@ -31,6 +31,8 @@ export default function Homepage(props) {
     }
   }
 
+
+
   async function handleSubmitAvatar(e){
     e.preventDefault();
     const verification = getExtension(avatarForm);
@@ -38,25 +40,27 @@ export default function Homepage(props) {
       setInfoMessage("Format d'image invalide")
       return;
     }
-    const uniqueFileName = `${uuidv4()}.png`;
-    const node = document.querySelector("article");
-    const pngFile = new File([avatarForm], uniqueFileName, { type: `image/png` });
-    console.log(pngFile)
+    const fileReader = new FileReader();
+    fileReader.onload = async() =>{
+      const blob = new Blob([fileReader.result], {type: 'image/png'})
+      const response = await fetch('api/updateAvatar', {
+        method: 'PUT',
+        body: JSON.stringify({avatar: blob, id: props.id})
+      })
+      const data = await response.json();
+      setInfoMessage(data.message)
 
-    const response = await fetch('api/updateAvatar', {
-      method: 'PUT',
-      body: JSON.stringify({avatar: pngFile, id: props.user.id})
-    })
-    const data = await response.json();
-    setInfoMessage(data.message)
-
-
-    setAvatarEdition(false)
-    setAvatarForm('')
+      setAvatarEdition(false)
+      setAvatarForm('')
+    }
   }
+
+
 
   function handleChange(e){
     setAvatarForm(e.target.value)
+    console.log(image.current.files)
+
   }
 
   return (
@@ -66,9 +70,8 @@ export default function Homepage(props) {
         style={{
           backgroundImage: `url(${path})`,
         }}
-<<<<<<< HEAD
       >
-        <Avatar setAvatarEdition={setAvatarEdition}/>
+        <Avatar setAvatarEdition={setAvatarEdition} avatar={props.avatar}/>
         {avatarEdition && 
             <form className={styles.formAvatar} onSubmit={(e) => handleSubmitAvatar(e)}>
               <span>Modifie ton Avatar</span>
@@ -78,7 +81,7 @@ export default function Homepage(props) {
               <label htmlFor="file-input" className={styles.dropContainer}>
                 <span>Drop files here</span>
                 or
-                <input type="file" name="image" accept="image/*" required className={styles.avatarFileInput} value={avatarForm} onChange={(e) => handleChange(e)}/>
+                <input type="file" name="image" accept="image/*" required className={styles.avatarFileInput} value={avatarForm} onChange={(e) => handleChange(e)} ref={image}/>
                 <button className={styles.submitAvatar}>Valider</button>
               </label>
             </form>
@@ -86,10 +89,6 @@ export default function Homepage(props) {
         }
       </div>
       <Navbar page={"homepage"} />
-=======
-      ></div>
-      <Navbar />
->>>>>>> julien/main
     </>
   );
 }

@@ -1,6 +1,15 @@
+import { useEffect, useState } from 'react'
 import styles from './avatar.module.css'
 
 export default function Avatar(props) {
+    const [imageUrl, setImageUrl] = useState(null)
+
+    const blob = new Blob([props.avatar], {type: "image/png"})
+
+    useEffect(()=>{
+        const objectUrl = URL.createObjectURL(blob);
+        setImageUrl(objectUrl)
+    }, [])
 
     function handleClick(){
         props.setAvatarEdition(true)
@@ -16,6 +25,7 @@ export default function Avatar(props) {
             }}
             onClick={handleClick}
         >
+            {imageUrl && <img src={imageUrl} alt="avatar"/>}
         </div>
     )
 }
