@@ -14,6 +14,7 @@ export const getServerSideProps = withSessionSsr(
     const user = await User.findByPk(sessionUser.id);
     const id = user.id;
     const avatar = user.avatar;
+    console.log('voici mon blob:', avatar)
     if(avatar){
       return {
         props: { id, avatar: avatar.toJSON()},

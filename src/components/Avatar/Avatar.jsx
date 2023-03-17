@@ -3,13 +3,15 @@ import styles from './avatar.module.css'
 
 export default function Avatar(props) {
     const [imageUrl, setImageUrl] = useState(null)
+    const blob = new Blob([Buffer.from(props.avatar)], {type: 'image/png'})
+    console.log(blob)
 
-    const blob = new Blob([props.avatar], {type: "image/png"})
 
     useEffect(()=>{
         const objectUrl = URL.createObjectURL(blob);
         setImageUrl(objectUrl)
-    }, [])
+    },[])
+
 
     function handleClick(){
         props.setAvatarEdition(true)
@@ -18,14 +20,13 @@ export default function Avatar(props) {
     return(
         <div 
             className={styles.avatar} style={{
-                // backgroundImage: `url(public/icons/logo.svg')`,
+                backgroundImage: `url(${imageUrl})`,
                 backgroundColor: '#fff',
                 backgroundPosition: 'center',
                 backgroundSize: 'cover'
             }}
             onClick={handleClick}
         >
-            {imageUrl && <img src={imageUrl} alt="avatar"/>}
         </div>
     )
 }

@@ -2,6 +2,7 @@ import { useState, useContext,useRef } from "react";
 import { MessageData } from '@/context/MsgContext';
 import { v4 as uuidv4 } from "uuid";
 
+
 import Avatar from "../Avatar/Avatar";
 import Navbar from "../Navbar/Navbar";
 
@@ -16,7 +17,7 @@ export default function Homepage(props) {
   const image = useRef(null)
 
   function getExtension(filename){
-    const parts = filename.split('.');
+    const parts = filename.split('/');
     const extention = parts[parts.length - 1];
     switch(extention.toUpperCase()){
       case 'JPG':
@@ -32,20 +33,24 @@ export default function Homepage(props) {
   }
 
 
-
   async function handleSubmitAvatar(e){
     e.preventDefault();
-    const verification = getExtension(avatarForm);
+    const file = image.current.files[0]
+    const verification = getExtension(file.type);
     if(!verification){
       setInfoMessage("Format d'image invalide")
       return;
     }
-    const fileReader = new FileReader();
-    fileReader.onload = async() =>{
-      const blob = new Blob([fileReader.result], {type: 'image/png'})
+
+    const reader = new FileReader();
+    // reader.readAsText(file)
+
+    reader.onloadend = async function(){
+      const imageData = new Uint8Array(reader.result)
+      console.log(imageData)
       const response = await fetch('api/updateAvatar', {
         method: 'PUT',
-        body: JSON.stringify({avatar: blob, id: props.id})
+        body: JSON.stringify({avatar: imageData, id: props.id})
       })
       const data = await response.json();
       setInfoMessage(data.message)
@@ -53,14 +58,14 @@ export default function Homepage(props) {
       setAvatarEdition(false)
       setAvatarForm('')
     }
+    reader.readAsArrayBuffer(file)  
   }
 
 
 
   function handleChange(e){
     setAvatarForm(e.target.value)
-    console.log(image.current.files)
-
+    // console.log(image.current.files)
   }
 
   return (
