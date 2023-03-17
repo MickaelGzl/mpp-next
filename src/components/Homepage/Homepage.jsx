@@ -48,15 +48,18 @@ export default function Homepage(props) {
     reader.onloadend = async function(){
       const imageData = new Uint8Array(reader.result)
       console.log(imageData)
+      const blob = new Blob([imageData], {type: 'image/png'})
+      console.log(blob)
       const response = await fetch('api/updateAvatar', {
         method: 'PUT',
+        headers: {'content-type': 'multipart/form-data'},
         body: JSON.stringify({avatar: imageData, id: props.id})
       })
       const data = await response.json();
       setInfoMessage(data.message)
 
-      setAvatarEdition(false)
-      setAvatarForm('')
+      // setAvatarEdition(false)
+      // setAvatarForm('')
     }
     reader.readAsArrayBuffer(file)  
   }
